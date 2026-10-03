@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Clima Realista - Nuevo Laredo</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background: linear-gradient(135deg, #162447, #1f4068);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            padding: 10px;
+            overflow: hidden;
+            position: relative;
+            transition: background 1.5s ease;
+        }
+
+        #effects-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            position: relative;
+            z-index: 2;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .city {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        .current-temp {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin: 6px 0;
+        }
+        .description {
+            font-size: 0.95rem;
+            text-transform: capitalize;
+            color: #dcdcdc;
+            margin-bottom: 6px;
+        }
+        .sub-info {
+            font-size: 0.8rem;
+            color: #a0c4ff;
+        }
+        
+        .section-title {
+            font-size: 0.8rem;
+            margin: 14px 0 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            padding-bottom: 3px;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            color: #b0c4de;
+        }
+
+        .scroll-container {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+        }
+        .scroll-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .card-chip {
+            background: rgba(0, 0, 0, 0.25);
+            padding: 8px 10px;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 72px;
+            flex-shrink: 0;
+            font-size: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .card-chip.active {
+            background: rgba(255, 255, 255, 0.32);
+            border: 1px solid #70d6ff;
+            box-shadow: 0 0 10px rgba(112, 214, 255, 0.4);
+        }
+        .temp-max { color: #ffadad; font-weight: bold; }
+        .temp-min { color: #a0c4ff; font-weight: bold; }
+        
+        .error {
+            color: #ff6b6b;
+            text-align: center;
+            font-size: 0.85rem;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="effects-layer"></div>
+
+    <div class="container" id="app">
+        <div class="header">
+            <div class="city">Nuevo Laredo, Tamps.</div>
+            <div id="current-weather">
+                <div class="current-temp">--°C</div>
+                <div class="description">Cargando clima...</div>
+            </div>
+        </div>
+
+        <div class="section-title">Pronóstico a 7 Días</div>
+        <div class="scroll-container" id="daily-forecast"></div>
+
+        <div class="section-title" id="detail-title">Detalle por hora</div>
+        <div class="scroll-container" id="hourly-forecast"></div>
+    </div>
+
+    <script>
+        let globalWeatherData = null;
+
+        function getWeatherIcon(code) {
+            switch (code) {
+                case 0: return '☀️';
+                case 1: case 2: return '🌤️';
+                case 3: return '☁️';
+                case 45: case 48: return '🌫';
+                case 51: case 53: case 55: case 61: case 63: case 65: return '🌧️';
+                case 71: case 73: case 75: return '❄️';
+                case 80: case 81: case 82: return '🌦️';
+                case 95: case 96: case 99: return '⛈️';
+                default: return '🌡️';
+            }
+        }
+
+        async function fetchWeatherData() {
+            const url = 'https://api.open-meteo.com/v1/forecast?latitude=27.4828&longitude=-99.5085&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&hourly=temperature_2m,precipitation_probability,weather_code&timezone=America%2FMonterrey';
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+                
+                globalWeatherData = await response.json();
+                
+                const cur = globalWeatherData.current;
+                const tempCurrent = Math.round(cur.temperature_2m);
+                const curCode = cur.weather_code;
+                const curIcon = getWeatherIcon(curCode);
+
+                document.getElementById('current-weather').innerHTML = `
+                    <div class="current-temp">${tempCurrent}°C</div>
+                    <div class="description">${curIcon} Actual</div>
+                    <div class="sub-info">Viento: ${cur.wind_speed_10m} km/h | Humedad: ${cur.relative_humidity_2m}%</div>
+                `;
+
+                renderDailyChips();
+                showHourlyForDay(0);
+
+            } catch (error) {
+                console.error(error);
+                document.getElementById('current-weather').innerHTML = `
+                    <div class="error">No se pudo cargar el clima.<br><small>${error.message}</small></div>
+                `;
+            }
+        }
+
+        function renderDailyChips() {
+            const dailyContainer = document.getElementById('daily-forecast');
+            dailyContainer.innerHTML = '';
+
+            for (let i = 0; i < 7; i++) {
+                const dateObj = new Date(globalWeatherData.daily.time[i] + 'T00:00:00');
+                const dayName = i === 0 ? 'Hoy' : dateObj.toLocaleDateString('es-ES', { weekday: 'short' });
+                
+                const maxTemp = Math.round(globalWeatherData.daily.temperature_2m_max[i]);
+                const minTemp = Math.round(globalWeatherData.daily.temperature_2m_min[i]);
+                const dCode = globalWeatherData.daily.weather_code[i];
+                const icon = getWeatherIcon(dCode);
+
+                dailyContainer.innerHTML += `
+                    <div class="card-chip ${i === 0 ? 'active' : ''}" onclick="selectDay(${i}, this)">
+                        <div style="font-weight: 600; text-transform: capitalize;">${dayName}</div>
+                        <div style="font-size: 1.1rem; margin: 2px 0;">${icon}</div>
+                        <div>
+                            <span class="temp-max">${maxTemp}°</span> <span class="temp-min">${minTemp}°</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function selectDay(dayIndex, element) {
+            document.querySelectorAll('#daily-forecast .card-chip').forEach(card => card.classList.remove('active'));
+            element.classList.add('active');
+            showHourlyForDay(dayIndex);
+        }
+
+        function showHourlyForDay(dayIndex) {
+            const hourlyContainer = document.getElementById('hourly-forecast');
+            hourlyContainer.innerHTML = '';
+
+            const targetDateStr = globalWeatherData.daily.time[dayIndex];
+            const dateObj = new Date(targetDateStr + 'T00:00:00');
+            document.getElementById('detail-title').innerText = `Horas: ${dateObj.toLocaleDateString('es-ES', { weekday: 'short', month: 'numeric', day: 'numeric' })}`.toUpperCase();
+
+            let targetCardToFocus = null;
+
+            // Obtenemos la fecha y hora local directamente del sistema de tu PC en formato 24h limpio
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const currentHourNum = now.getHours(); // Hora exacta en formato 24h (ej: 13)
+
+            const currentDateStr = `${year}-${month}-${day}`;
+
+            for (let i = 0; i < globalWeatherData.hourly.time.length; i++) {
+                const fullTimeStr = globalWeatherData.hourly.time[i];
+                if (fullTimeStr.startsWith(targetDateStr)) {
+                    const hourPart = fullTimeStr.split('T')[1]; // "13:00"
+                    const hourNum = parseInt(hourPart.substring(0, 2), 10); // 13
+                    const displayHourStr = hourPart.substring(0, 5);
+                    
+                    const temp = Math.round(globalWeatherData.hourly.temperature_2m[i]);
+                    const rainProb = globalWeatherData.hourly.precipitation_probability[i];
+                    const hCode = globalWeatherData.hourly.weather_code[i];
+                    const icon = getWeatherIcon(hCode);
+
+                    const isCurrentHour = (dayIndex === 0 && targetDateStr === currentDateStr && hourNum === currentHourNum);
+                    const activeClass = isCurrentHour ? 'active' : '';
+
+                    const cardHTML = `
+                        <div class="card-chip ${activeClass}">
+                            <div style="font-size:0.75rem; color:#ccc;">${displayHourStr}</div>
+                            <div style="font-size: 1rem;">${icon}</div>
+                            <div style="font-weight:bold;">${temp}°C</div>
+                            <div style="color: #70d6ff; font-size:0.7rem;">💧${rainProb}%</div>
+                        </div>
+                    `;
+
+                    hourlyContainer.insertAdjacentHTML('beforeend', cardHTML);
+                    const createdCard = hourlyContainer.lastElementChild;
+
+                    if (isCurrentHour) {
+                        targetCardToFocus = createdCard;
+                    }
+                }
+            }
+
+            if (targetCardToFocus) {
+                setTimeout(() => {
+                    targetCardToFocus.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                }, 100);
+            }
+        }
+
+        fetchWeatherData();
+    </script>
+</body>
+</html>
