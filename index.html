@@ -1,287 +1,550 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Clima Realista - Nuevo Laredo</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body {
-            background: linear-gradient(135deg, #162447, #1f4068);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: #fff;
-            padding: 10px;
-            overflow: hidden;
-            position: relative;
-            transition: background 1.5s ease;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clima Nuevo Laredo</title>
+  <style>
+    :root {
+      --bg1: #091827;
+      --bg2: #16314f;
+      --card: rgba(255,255,255,0.08);
+      --card-strong: rgba(255,255,255,0.12);
+      --text: #ecf7ff;
+      --muted: #c7d9ef;
+      --line: rgba(255,255,255,0.12);
+      --cyan: #7dd3fc;
+      --yellow: #fbbf24;
+      --red: #f87171;
+      --green: #4ade80;
+      --shadow: 0 20px 40px rgba(0,0,0,0.22);
+    }
 
-        #effects-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            overflow: hidden;
-        }
+    * { box-sizing: border-box; }
 
-        .container {
-            width: 100%;
-            max-width: 420px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 24px;
-            padding: 18px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            position: relative;
-            z-index: 2;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 12px;
-        }
-        .city {
-            font-size: 1.25rem;
-            font-weight: 600;
-        }
-        .current-temp {
-            font-size: 2.8rem;
-            font-weight: 700;
-            margin: 6px 0;
-        }
-        .description {
-            font-size: 0.95rem;
-            text-transform: capitalize;
-            color: #dcdcdc;
-            margin-bottom: 6px;
-        }
-        .sub-info {
-            font-size: 0.8rem;
-            color: #a0c4ff;
-        }
-        
-        .section-title {
-            font-size: 0.8rem;
-            margin: 14px 0 8px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-            padding-bottom: 3px;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            color: #b0c4de;
-        }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: linear-gradient(145deg, var(--bg1), var(--bg2));
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
 
-        .scroll-container {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-            scrollbar-width: none;
-            scroll-behavior: smooth;
-        }
-        .scroll-container::-webkit-scrollbar {
-            display: none;
-        }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 30px 18px;
+    }
 
-        .card-chip {
-            background: rgba(0, 0, 0, 0.25);
-            padding: 8px 10px;
-            border-radius: 12px;
-            text-align: center;
-            min-width: 72px;
-            flex-shrink: 0;
-            font-size: 0.8rem;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        .card-chip.active {
-            background: rgba(255, 255, 255, 0.32);
-            border: 1px solid #70d6ff;
-            box-shadow: 0 0 10px rgba(112, 214, 255, 0.4);
-        }
-        .temp-max { color: #ffadad; font-weight: bold; }
-        .temp-min { color: #a0c4ff; font-weight: bold; }
-        
-        .error {
-            color: #ff6b6b;
-            text-align: center;
-            font-size: 0.85rem;
-            padding: 10px;
-        }
-    </style>
+    .app {
+      width: min(1100px, 100%);
+      background: rgba(9, 24, 39, 0.7);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 26px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      letter-spacing: 0.03em;
+    }
+
+    .brand p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .date-pill {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 14px;
+      text-align: center;
+      min-width: 150px;
+    }
+
+    .date-pill small {
+      display: block;
+      color: var(--muted);
+      margin-bottom: 4px;
+      font-size: 0.75rem;
+    }
+
+    .date-pill strong {
+      font-size: 1rem;
+    }
+
+    .content {
+      padding: 24px 26px 12px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.4fr 0.8fr;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 22px 20px;
+    }
+
+    .current {
+      position: relative;
+      overflow: hidden;
+      min-height: 220px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .current::before {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      right: -26px;
+      bottom: -44px;
+      background: radial-gradient(circle, rgba(125, 211, 252, 0.42), transparent 65%);
+      pointer-events: none;
+    }
+
+    .temp-box {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .weather-icon {
+      font-size: clamp(4rem, 8vw, 6rem);
+      filter: drop-shadow(0 12px 16px rgba(0,0,0,0.18));
+    }
+
+    .temp {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .temp strong {
+      font-size: clamp(3rem, 5vw, 5rem);
+      line-height: 0.9;
+      font-weight: 800;
+    }
+
+    .temp span {
+      font-size: 1.8rem;
+      opacity: 0.85;
+      margin-top: 8px;
+    }
+
+    .meta {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .condition {
+      font-size: 1.55rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .location {
+      color: var(--muted);
+      margin-bottom: 14px;
+      font-size: 0.98rem;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .tag {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 8px 12px;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+
+    .details h3 {
+      margin: 0 0 16px;
+      font-size: 1.15rem;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .stat {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 14px 12px;
+    }
+
+    .stat .label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      margin-bottom: 8px;
+    }
+
+    .stat .value {
+      font-weight: 700;
+      font-size: 1.05rem;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0 0 12px;
+      padding: 0 4px;
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    .section-head span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .hours {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(120px, 1fr));
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .hour-card {
+      min-width: 120px;
+      padding: 16px 12px;
+      text-align: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hour-card.active {
+      background: linear-gradient(180deg, rgba(125, 211, 252, 0.18), rgba(255,255,255,0.02));
+      border-color: rgba(125,211,252,0.8);
+      box-shadow: 0 0 0 1px rgba(125,211,252,0.45), 0 18px 24px rgba(125,211,252,0.1);
+      transform: translateY(-2px);
+    }
+
+    .hour-time {
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 0.88rem;
+    }
+
+    .hour-card.active .hour-time {
+      color: var(--cyan);
+    }
+
+    .hour-icon {
+      font-size: 2.2rem;
+      margin: 8px 0;
+    }
+
+    .hour-temp {
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .hour-rain {
+      margin-top: 6px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .days {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(120px, 1fr));
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .day-card {
+      min-width: 120px;
+      padding: 18px 12px;
+      text-align: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+    }
+
+    .day-name {
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .day-icon {
+      font-size: 2rem;
+      margin: 6px 0 10px;
+    }
+
+    .day-temps {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.95rem;
+    }
+
+    .day-temps .max {
+      font-weight: 700;
+    }
+
+    .day-temps .min {
+      color: var(--muted);
+    }
+
+    @media (max-width: 820px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .current {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
-
-    <div id="effects-layer"></div>
-
-    <div class="container" id="app">
-        <div class="header">
-            <div class="city">Nuevo Laredo, Tamps.</div>
-            <div id="current-weather">
-                <div class="current-temp">--°C</div>
-                <div class="description">Cargando clima...</div>
-            </div>
-        </div>
-
-        <div class="section-title">Pronóstico a 7 Días</div>
-        <div class="scroll-container" id="daily-forecast"></div>
-
-        <div class="section-title" id="detail-title">Detalle por hora</div>
-        <div class="scroll-container" id="hourly-forecast"></div>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">
+        <h1>Nuevo Laredo</h1>
+        <p>Pronóstico del clima</p>
+      </div>
+      <div class="date-pill">
+        <small>Hoy</small>
+        <strong id="todayDate"></strong>
+      </div>
     </div>
 
-    <script>
-        let globalWeatherData = null;
+    <div class="content">
+      <div class="hero">
+        <div class="panel current">
+          <div class="temp-box">
+            <div class="weather-icon" id="mainIcon">🌡️</div>
+            <div class="temp">
+              <strong id="currentTemp">—</strong>
+              <span>°C</span>
+            </div>
+          </div>
 
-        function getWeatherIcon(code) {
-            switch (code) {
-                case 0: return '☀️';
-                case 1: case 2: return '🌤️';
-                case 3: return '☁️';
-                case 45: case 48: return '🌫';
-                case 51: case 53: case 55: case 61: case 63: case 65: return '🌧️';
-                case 71: case 73: case 75: return '❄️';
-                case 80: case 81: case 82: return '🌦️';
-                case 95: case 96: case 99: return '⛈️';
-                default: return '🌡️';
-            }
-        }
+          <div class="meta">
+            <div class="condition" id="conditionText">Cargando…</div>
+            <div class="location">Nuevo Laredo, Tamaulipas</div>
+            <div class="tags">
+              <span class="tag" id="feelsLike">Sensación —</span>
+              <span class="tag" id="humidity">Humedad —</span>
+              <span class="tag" id="wind">Viento —</span>
+            </div>
+          </div>
+        </div>
 
-        async function fetchWeatherData() {
-            const url = 'https://api.open-meteo.com/v1/forecast?latitude=27.4828&longitude=-99.5085&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min&hourly=temperature_2m,precipitation_probability,weather_code&timezone=America%2FMonterrey';
+        <div class="panel details">
+          <h3>Detalles</h3>
+          <div class="stats">
+            <div class="stat">
+              <span class="label">Presión</span>
+              <span class="value" id="pressure">—</span>
+            </div>
+            <div class="stat">
+              <span class="label">Visibilidad</span>
+              <span class="value" id="visibility">—</span>
+            </div>
+            <div class="stat">
+              <span class="label">UV</span>
+              <span class="value" id="uv">—</span>
+            </div>
+            <div class="stat">
+              <span class="label">Amanecer</span>
+              <span class="value" id="sunrise">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-                
-                globalWeatherData = await response.json();
-                
-                const cur = globalWeatherData.current;
-                const tempCurrent = Math.round(cur.temperature_2m);
-                const curCode = cur.weather_code;
-                const curIcon = getWeatherIcon(curCode);
+      <section>
+        <div class="section-head">
+          <h2>Pronóstico por horas</h2>
+          <span>Hora actual resaltada</span>
+        </div>
+        <div class="hours" id="hourlyForecast"></div>
+      </section>
 
-                document.getElementById('current-weather').innerHTML = `
-                    <div class="current-temp">${tempCurrent}°C</div>
-                    <div class="description">${curIcon} Actual</div>
-                    <div class="sub-info">Viento: ${cur.wind_speed_10m} km/h | Humedad: ${cur.relative_humidity_2m}%</div>
-                `;
+      <section>
+        <div class="section-head">
+          <h2>Pronóstico diario</h2>
+          <span id="forecastStatus" role="status" aria-live="polite">Consultando pronóstico…</span>
+        </div>
+        <div class="days" id="dailyForecast"></div>
+      </section>
+    </div>
+  </div>
 
-                renderDailyChips();
-                showHourlyForDay(0);
+  <script>
+    const API_URL = 'https://api.open-meteo.com/v1/forecast?latitude=27.5064&longitude=-99.5075&timezone=America%2FMatamoros&forecast_days=7&current=temperature_2m,relative_humidity_2m,apparent_temperature,is_day,precipitation,weather_code,surface_pressure,wind_speed_10m&hourly=temperature_2m,apparent_temperature,precipitation_probability,weather_code,uv_index,visibility,is_day&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&temperature_unit=celsius&wind_speed_unit=kmh';
+    const weatherDescriptions = {
+      0: ['Despejado', '☀️', '🌙'],
+      1: ['Mayormente despejado', '🌤️', '🌙'],
+      2: ['Parcialmente nublado', '⛅', '☁️'],
+      3: ['Nublado', '☁️', '☁️'],
+      45: ['Niebla', '🌫️', '🌫️'],
+      48: ['Niebla con escarcha', '🌫️', '🌫️'],
+      51: ['Llovizna ligera', '🌦️', '🌧️'],
+      53: ['Llovizna moderada', '🌦️', '🌧️'],
+      55: ['Llovizna intensa', '🌧️', '🌧️'],
+      56: ['Llovizna helada ligera', '🌧️', '🌧️'],
+      57: ['Llovizna helada intensa', '🌧️', '🌧️'],
+      61: ['Lluvia ligera', '🌦️', '🌧️'],
+      63: ['Lluvia moderada', '🌧️', '🌧️'],
+      65: ['Lluvia intensa', '🌧️', '🌧️'],
+      66: ['Lluvia helada ligera', '🌧️', '🌧️'],
+      67: ['Lluvia helada intensa', '🌧️', '🌧️'],
+      71: ['Nieve ligera', '🌨️', '🌨️'],
+      73: ['Nieve moderada', '🌨️', '🌨️'],
+      75: ['Nieve intensa', '❄️', '❄️'],
+      77: ['Granos de nieve', '🌨️', '🌨️'],
+      80: ['Chubascos ligeros', '🌦️', '🌧️'],
+      81: ['Chubascos moderados', '🌧️', '🌧️'],
+      82: ['Chubascos fuertes', '⛈️', '⛈️'],
+      85: ['Chubascos de nieve', '🌨️', '🌨️'],
+      86: ['Chubascos intensos de nieve', '❄️', '❄️'],
+      storm: ['Tormenta', '⛈️', '⛈️']
+    };
 
-            } catch (error) {
-                console.error(error);
-                document.getElementById('current-weather').innerHTML = `
-                    <div class="error">No se pudo cargar el clima.<br><small>${error.message}</small></div>
-                `;
-            }
-        }
+    function getWeather(code) {
+      if (code >= 95) return weatherDescriptions.storm;
+      return weatherDescriptions[code] || ['Condición no disponible', '🌡️', '🌡️'];
+    }
 
-        function renderDailyChips() {
-            const dailyContainer = document.getElementById('daily-forecast');
-            dailyContainer.innerHTML = '';
+    function formatDay(dateString) {
+      const date = new Date(`${dateString}T12:00:00`);
+      return new Intl.DateTimeFormat('es-MX', { weekday: 'short', day: 'numeric' }).format(date);
+    }
 
-            for (let i = 0; i < 7; i++) {
-                const dateObj = new Date(globalWeatherData.daily.time[i] + 'T00:00:00');
-                const dayName = i === 0 ? 'Hoy' : dateObj.toLocaleDateString('es-ES', { weekday: 'short' });
-                
-                const maxTemp = Math.round(globalWeatherData.daily.temperature_2m_max[i]);
-                const minTemp = Math.round(globalWeatherData.daily.temperature_2m_min[i]);
-                const dCode = globalWeatherData.daily.weather_code[i];
-                const icon = getWeatherIcon(dCode);
+    async function loadForecast() {
+      const status = document.getElementById('forecastStatus');
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) throw new Error(`Error del servicio meteorológico (${response.status})`);
+        const data = await response.json();
+        if (!data.current || !data.hourly || !data.daily) throw new Error('El servicio devolvió datos incompletos.');
 
-                dailyContainer.innerHTML += `
-                    <div class="card-chip ${i === 0 ? 'active' : ''}" onclick="selectDay(${i}, this)">
-                        <div style="font-weight: 600; text-transform: capitalize;">${dayName}</div>
-                        <div style="font-size: 1.1rem; margin: 2px 0;">${icon}</div>
-                        <div>
-                            <span class="temp-max">${maxTemp}°</span> <span class="temp-min">${minTemp}°</span>
-                        </div>
-                    </div>
-                `;
-            }
-        }
+        const current = data.current;
+        const hourly = data.hourly;
+        const currentTime = current.time.slice(0, 13) + ':00';
+        let currentIndex = hourly.time.indexOf(currentTime);
+        if (currentIndex < 0) currentIndex = Math.max(0, hourly.time.findIndex((time) => time >= currentTime));
+        if (currentIndex < 0) currentIndex = 0;
 
-        function selectDay(dayIndex, element) {
-            document.querySelectorAll('#daily-forecast .card-chip').forEach(card => card.classList.remove('active'));
-            element.classList.add('active');
-            showHourlyForDay(dayIndex);
-        }
+        // Use the same hourly data point for the current card and highlighted hour.
+        const selectedTemp = hourly.temperature_2m[currentIndex];
+        const selectedCode = hourly.weather_code[currentIndex];
+        const currentWeather = getWeather(selectedCode);
+        const formatNumber = (value) => Number.isFinite(value) ? Math.round(value) : '—';
+        const setText = (id, value) => { document.getElementById(id).textContent = value; };
 
-        function showHourlyForDay(dayIndex) {
-            const hourlyContainer = document.getElementById('hourly-forecast');
-            hourlyContainer.innerHTML = '';
+        setText('mainIcon', currentWeather[current.is_day === 1 ? 1 : 2]);
+        setText('currentTemp', formatNumber(selectedTemp));
+        setText('conditionText', currentWeather[0]);
+        setText('feelsLike', `Sensación ${formatNumber(hourly.apparent_temperature[currentIndex])}°C`);
+        setText('humidity', `Humedad ${formatNumber(current.relative_humidity_2m)}%`);
+        setText('wind', `Viento ${formatNumber(current.wind_speed_10m)} km/h`);
+        setText('pressure', `${formatNumber(current.surface_pressure)} hPa`);
+        setText('visibility', `${(hourly.visibility[currentIndex] / 1000).toFixed(1)} km`);
+        setText('uv', `${formatNumber(hourly.uv_index[currentIndex])} / 11`);
+        setText('sunrise', data.daily.sunrise[0].slice(11, 16));
+        setText('todayDate', new Intl.DateTimeFormat('es-MX', { day: 'numeric', month: 'short', timeZone: 'America/Matamoros' }).format(new Date()));
 
-            const targetDateStr = globalWeatherData.daily.time[dayIndex];
-            const dateObj = new Date(targetDateStr + 'T00:00:00');
-            document.getElementById('detail-title').innerText = `Horas: ${dateObj.toLocaleDateString('es-ES', { weekday: 'short', month: 'numeric', day: 'numeric' })}`.toUpperCase();
+        const firstHour = currentIndex;
+        const hourlyHTML = hourly.time.slice(firstHour, firstHour + 24).map((time, offset) => {
+          const index = firstHour + offset;
+          const isCurrent = index === currentIndex;
+          const isDay = hourly.is_day[index] === 1;
+          const weather = getWeather(hourly.weather_code[index]);
+          return `
+            <div class="hour-card ${isCurrent ? 'active' : ''}" ${isCurrent ? 'aria-current="time"' : ''}>
+              <div class="hour-time">${isCurrent ? 'Ahora' : time.slice(11, 16)}</div>
+              <div class="hour-icon">${weather[isDay ? 1 : 2]}</div>
+              <div class="hour-temp">${formatNumber(hourly.temperature_2m[index])}°</div>
+              <div class="hour-rain">Lluvia ${formatNumber(hourly.precipitation_probability[index])}%</div>
+            </div>
+          `;
+        }).join('');
+        document.getElementById('hourlyForecast').innerHTML = hourlyHTML;
 
-            let targetCardToFocus = null;
+        const dailyHTML = data.daily.time.map((date, index) => {
+          const weather = getWeather(data.daily.weather_code[index]);
+          return `
+            <div class="day-card">
+              <div class="day-name">${formatDay(date)}</div>
+              <div class="day-icon">${weather[1]}</div>
+              <div class="day-name">${weather[0]}</div>
+              <div class="day-temps">
+                <span class="max">${formatNumber(data.daily.temperature_2m_max[index])}°</span>
+                <span class="min">${formatNumber(data.daily.temperature_2m_min[index])}°</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+        document.getElementById('dailyForecast').innerHTML = dailyHTML;
+        status.textContent = 'Datos actuales · Open-Meteo';
+      } catch (error) {
+        status.textContent = 'No se pudo cargar el pronóstico en vivo.';
+        console.error('Error al cargar el pronóstico:', error);
+      }
+    }
 
-            // Obtenemos la fecha y hora local directamente del sistema de tu PC en formato 24h limpio
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const currentHourNum = now.getHours(); // Hora exacta en formato 24h (ej: 13)
-
-            const currentDateStr = `${year}-${month}-${day}`;
-
-            for (let i = 0; i < globalWeatherData.hourly.time.length; i++) {
-                const fullTimeStr = globalWeatherData.hourly.time[i];
-                if (fullTimeStr.startsWith(targetDateStr)) {
-                    const hourPart = fullTimeStr.split('T')[1]; // "13:00"
-                    const hourNum = parseInt(hourPart.substring(0, 2), 10); // 13
-                    const displayHourStr = hourPart.substring(0, 5);
-                    
-                    const temp = Math.round(globalWeatherData.hourly.temperature_2m[i]);
-                    const rainProb = globalWeatherData.hourly.precipitation_probability[i];
-                    const hCode = globalWeatherData.hourly.weather_code[i];
-                    const icon = getWeatherIcon(hCode);
-
-                    const isCurrentHour = (dayIndex === 0 && targetDateStr === currentDateStr && hourNum === currentHourNum);
-                    const activeClass = isCurrentHour ? 'active' : '';
-
-                    const cardHTML = `
-                        <div class="card-chip ${activeClass}">
-                            <div style="font-size:0.75rem; color:#ccc;">${displayHourStr}</div>
-                            <div style="font-size: 1rem;">${icon}</div>
-                            <div style="font-weight:bold;">${temp}°C</div>
-                            <div style="color: #70d6ff; font-size:0.7rem;">💧${rainProb}%</div>
-                        </div>
-                    `;
-
-                    hourlyContainer.insertAdjacentHTML('beforeend', cardHTML);
-                    const createdCard = hourlyContainer.lastElementChild;
-
-                    if (isCurrentHour) {
-                        targetCardToFocus = createdCard;
-                    }
-                }
-            }
-
-            if (targetCardToFocus) {
-                setTimeout(() => {
-                    targetCardToFocus.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-                }, 100);
-            }
-        }
-
-        fetchWeatherData();
-    </script>
+    loadForecast();
+    setInterval(loadForecast, 15 * 60 * 1000);
+  </script>
 </body>
 </html>
